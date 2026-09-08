@@ -1,37 +1,25 @@
-# Nifty 50 — Time Series Forecast & Macro Analysis
+# Nifty 50 ARIMA Forecast — Research Note
 
-## Overview
-Time series analysis and forecasting on Nifty 50 index prices 
-combined with Indian inflation data as a macro indicator.
+An exploratory analysis of Nifty 50 daily prices testing whether ARIMA can forecast 
+index returns. The null result — it cannot — is the finding.
 
-## Dataset
-- Nifty 50 daily OHLCV data, 10 April 2014 – 10 March 2026 (2927 rows)
-- Source: Yahoo Finance via yfinance
-- Macro indicator: India CPI inflation (World Bank, annual)
+## Key Results
 
-## Key Findings
-- Raw prices are non-stationary (ADF p=0.94); daily returns are 
-  stationary (ADF p=0.00)
-- ARIMA(1,0,1) parameters were statistically insignificant — 
-  confirms Efficient Market Hypothesis for Nifty returns
-- Inflation weakly correlates with Nifty returns (r=0.39, n=12) 
-  but too unstable to be a reliable standalone predictor
-- Model honestly captured long-term drift but cannot predict 
-  short-term volatility
+- **ADF test on raw prices**: p = 0.94 → non-stationary (prices have a unit root)
+- **ADF test on log-returns**: p = 0.00 → stationary (returns are I(1))
+- **ARIMA(1,0,1) on returns**: both AR and MA coefficients statistically insignificant
+  (p > 0.05) — consistent with the Efficient Market Hypothesis at the daily frequency
 
-## What I Learned
-- Reading the price and return chart 
-- Understood how bad of an indicator inflation is for the entire market
-- Long term trading is better than day trade due to lower fluctuation and eventual rise in market
+## Interpretation
 
-## Files
-- nifty_forecast.ipynb — full analysis
-- outputs/nifty_overview.png — price and returns chart
-- outputs/decomposition.png — trend/seasonality/residual
-- outputs/acf_pacf.png — autocorrelation analysis
-- outputs/arima_forecast.png — forecast vs actual
-- outputs/inflation_analysis.png — macro indicator analysis
+The result is not a modelling failure — it is the expected finding from decades of 
+empirical finance research. Nifty 50 daily returns behave as a near-random walk at 
+this horizon. Forecasting *price levels* is the wrong target; forecasting *volatility 
+regimes* is where signal exists.
 
-## Setup
-pip install yfinance pandas-datareader numpy matplotlib seaborn statsmodels numpy scikit-learn
-```
+This analysis motivates the approach in 
+[volatility-classifier-simplified](https://github.com/RaajitSingh1306/volatility-classifier-simplified), 
+which models volatility clusters (GARCH + HMM) rather than return levels.
+
+## Stack
+`statsmodels` · `yfinance` · `pandas-datareader` · `matplotlib` · `seaborn`
