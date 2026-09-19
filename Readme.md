@@ -78,6 +78,16 @@ $$r_t = c + \phi_1 r_{t-1} + \theta_1 \epsilon_{t-1} + \epsilon_t$$
 
 ---
 
+## Key Design Decisions
+
+- **Augmented Dickey-Fuller (ADF) over KPSS**: ADF explicitly tests the null hypothesis of a unit root ($H_0$: non-stationary) against the alternative of difference-stationarity. In quantitative risk management, confirming rejection of a unit root on differences at the 1% significance level is standard before passing returns to volatility models.
+- **Parsimonious ARIMA(1,0,1) Specification**: AR(1)+MA(1) represents the minimal non-trivial linear autoregressive structure. Higher-order specifications ($p, q > 1$) were deliberately avoided because sample ACF and PACF correlations show no statistically significant lags; fitting higher-order polynomials would overfit high-frequency market microstructure noise.
+- **Log Returns over Simple Returns**: Logarithmic returns ($\ln(P_t / P_{t-1})$) are time-additive across horizons and conform to the continuous-time geometric Brownian motion assumptions required for standard stationarity testing.
+- **252-Day Annualization Factor**: Standardized across the Indian market trading calendar (~248–252 active trading sessions per year) for volatility and Sharpe scaling.
+- **Additive Decomposition**: Classical additive seasonal decomposition was selected to visually isolate low-frequency multi-year trend components from residual noise without distorting return scale.
+
+---
+
 ## Project Structure
 
 ```text
@@ -188,6 +198,23 @@ Nifty Sector Rotation Strategy (Exploits cross-sectional relative momentum)
 | **Nifty Time Series** (This Repo) | Empirical stationarity and EMH baseline | [Nifty-Time-Series](https://github.com/RaajitSingh1306/Nifty-Time-Series) |
 | **Volatility Intelligence Platform** | Shipped GARCH + HMM + XGBoost prediction system | [volatility-intelligence-platform](https://github.com/RaajitSingh1306/volatility-intelligence-platform) |
 | **Nifty Sector Rotation** | Cross-sectional momentum trading across 10 sectors | [Nifty-Sector-Rotation](https://github.com/RaajitSingh1306/Nifty-Sector-Rotation) |
+
+---
+
+## Limitations & Roadmap
+
+### Known Limitations
+- **Linear Model Restriction**: Evaluates linear autoregression (ARIMA) only; does not fit non-linear deep learning baselines (e.g. LSTM, Transformer) within this notebook.
+- **No Dual-Stationarity Confirmation**: Relies exclusively on ADF without running the complementary KPSS test (where the null hypothesis is stationarity).
+- **Descriptive Inflation Analysis**: The Indian CPI exploration is descriptive; it does not perform Engle-Granger or Johansen cointegration tests between inflation indices and equity multiples.
+- **Single Index Focus**: Analysis is restricted to the Nifty 50 benchmark (`^NSEI`); does not contrast findings against broader small-cap indices or global asset classes.
+- **In-Sample Fit Focus**: While the ARIMA forecast trajectory is visualized, formal out-of-sample rolling MAE/RMSE scoring was not computed because the model degenerated to the sample mean.
+
+### Roadmap
+- [ ] **Dual Stationarity Testing**: Incorporate KPSS test suite side-by-side with ADF to classify series into trend-stationary, difference-stationary, or ambiguous.
+- [ ] **Cointegration & Error Correction**: Implement vector error correction models (VECM) and Johansen cointegration tests between Indian CPI, G-Sec yields, and Nifty 50.
+- [ ] **GARCH Bridge**: Add GARCH(1,1) residual diagnostic code directly to demonstrate the shift from return-level randomness to second-moment volatility clustering.
+- [ ] **Deep Learning Baseline**: Implement a simple LSTM baseline to empirically prove that deep neural networks also fail to beat the random-walk benchmark on daily raw returns.
 
 ---
 
