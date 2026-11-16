@@ -2,10 +2,10 @@
 
 [![Empirical Econometrics](https://img.shields.io/badge/Econometrics-ADF%20%7C%20ARIMA-blue)](#8-results--evaluation)
 [![Stationarity](https://img.shields.io/badge/Returns%20Stationarity-p%20%3C%200.001-emerald)](#8-results--evaluation)
-[![EMH Verification](https://img.shields.io/badge/EMH%20Baseline-Confirmed%20(Null%20Result)-purple)](#2-why-it-was-built)
+[![EMH Verification](https://img.shields.io/badge/EMH%20Baseline-Consistent%20(Null%20Result)-purple)](#2-why-it-was-built)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](#16-license--disclaimer)
 
-An empirical quantitative econometrics research notebook investigating the predictability of daily **Nifty 50 (`^NSEI`)** prices and returns (2014–2026), alongside long-term Indian macroeconomic inflation dynamics (1960–2026). The project rigorously tests whether autoregressive integrated moving average (ARIMA) models can forecast index return levels. The core finding is an empirical **null result** ($p > 0.05$), confirming the Efficient Market Hypothesis (EMH) at daily frequencies and establishing the foundational justification for volatility regime clustering in downstream platforms.
+An empirical quantitative econometrics research notebook investigating the predictability of daily **Nifty 50 (`^NSEI`)** prices and returns (2014–2026), alongside annual Indian CPI inflation (analysed for 2014–2026). The project rigorously tests whether autoregressive integrated moving average (ARIMA) models can forecast index return levels. The core finding is an empirical **null result** ($p > 0.05$), consistent with the weak-form Efficient Market Hypothesis (EMH) at daily frequencies and establishing the foundational justification for volatility regime clustering in downstream platforms.
 
 ---
 
@@ -32,14 +32,14 @@ An empirical quantitative econometrics research notebook investigating the predi
 
 ## 1. What This Project Does
 
-Given 12+ years of daily Nifty 50 market prices and 60+ years of Indian Consumer Price Index (CPI) historical data, this research notebook:
+Given 12 years of daily Nifty 50 closes (2014 to 2026) and annual Indian CPI inflation (World Bank, 1960 to 2026; only 2014 to 2026 is analysed), this research notebook:
 
-- **Tests Stationarity & Unit Roots**: Evaluates raw price levels and log-differenced returns using Augmented Dickey-Fuller (ADF) tests.
-- **Deconstructs Time Series Components**: Splits the Nifty 50 series into secular trend, seasonal cycles, and residual noise via classical decomposition.
-- **Analyzes Serial Correlation**: Computes Autocorrelation (ACF) and Partial Autocorrelation (PACF) functions up to 40 lags to test for memory structures.
+- **Tests Stationarity & Unit Roots**: Evaluates raw price levels and simple daily returns using Augmented Dickey-Fuller (ADF) tests.
+- **Deconstructs Time Series Components**: Splits the Nifty 50 series into secular trend, seasonal and residual components of weekly-average closes via classical multiplicative decomposition (period = 52); the seasonal component is weak and likely an artefact.
+- **Analyzes Serial Correlation**: Computes Autocorrelation (ACF) and Partial Autocorrelation (PACF) functions up to 30 lags to test for memory structures.
 - **Estimates ARIMA Models**: Fits parsimonious $ARIMA(1,0,1)$ specifications on stationary return series.
 - **Evaluates Out-of-Sample Forecasts**: Quantifies forecast shrinkage and shows that linear predictions degenerate to the historical sample mean.
-- **Contextualizes Macro Inflation**: Analyzes 60+ years of Indian CPI from `indianCPI_1960_feb26.csv` to contrast nominal equity gains against real purchasing power.
+- **Contextualizes Macro Inflation**: Compares annual Indian CPI inflation (2014 to 2026, from `indianCPI_1960_feb26.csv`) with yearly average Nifty returns (13 points: r = +0.381; r = +0.190 for 2014 to 2025, which drops only the partial year 2026; r = -0.040 for 2015 to 2025; none significant at 5%, so sign and size depend on which years are included; descriptive only).
 
 ---
 
@@ -49,8 +49,8 @@ A common trap in quantitative finance is forcing machine learning algorithms ont
 
 - **Prices are Non-Stationary**: Index levels exhibit stochastic drift and unit roots; training models directly on non-stationary price levels produces spurious regressions.
 - **Returns Behave as Near-Random Walks**: At daily intervals, information is rapidly priced in. Past return signs provide virtually zero statistical leverage for predicting tomorrow's return direction.
-- **Signal Lives in Variance, Not Mean Drift**: While daily directional mean return is unpredictable (white noise), return **variance** exhibits significant volatility clustering (Mandelbrot, 1963).
-- **The Empirical Null Result as a Foundational Stepping Stone**: Proving the null result on first-moment return drift ($R^2 < 0.005$) provides the mathematical and economic justification for shifting focus to second-moment modeling (GARCH and Hidden Markov Models) in the Volatility Intelligence Platform.
+- **Signal Lives in Variance, Not Mean Drift**: While daily directional mean return is unpredictable (out-of-sample R-squared about 0), return **variance** exhibits significant volatility clustering (Mandelbrot, 1963).
+- **The Empirical Null Result as a Foundational Stepping Stone**: Proving the null result on first-moment return drift (R-squared about 0) provides the mathematical and economic justification for shifting focus to second-moment modeling (GARCH and Hidden Markov Models) in the Volatility Intelligence Platform.
 
 ---
 
@@ -70,13 +70,13 @@ A common trap in quantitative finance is forcing machine learning algorithms ont
 │                             (main.ipynb)                               │
 │                                                                        │
 │   1. Stationarity Testing (Augmented Dickey-Fuller)                    │
-│      ├── Raw Prices:  ADF = -0.245 (p = 0.942)  ──► Non-Stationary     │
-│      └── Log Returns: ADF = -56.82 (p < 0.001)  ──► Stationary I(1)    │
+│      ├── Raw Prices:  ADF = +0.059 (p = 0.963)  ──► Non-Stationary     │
+│      └── Returns:     ADF = -15.36 (p < 0.001)  ──► Stationary I(0)    │
 │                                                                        │
 │   2. Classical Time Series Decomposition (Trend, Seasonality, Resid)   │
 │                                                                        │
-│   3. Serial Dependence Diagnostics (ACF & PACF up to 40 lags)          │
-│      └── All lags fall within 95% Bartlett confidence bounds           │
+│   3. Serial Dependence Diagnostics (ACF & PACF up to 30 lags)          │
+│      └── 8/30 ACF, 7/30 PACF lags outside 95% bounds                   │
 │                                                                        │
 │   4. ARIMA(1,0,1) Fitting & Forecast Evaluation                        │
 │      └── Insignificant coefficients (p > 0.05), Forecast -> Sample Mean│
@@ -98,16 +98,15 @@ A common trap in quantitative finance is forcing machine learning algorithms ont
 
 ## 4. Tech Stack & Libraries
 
-| Library / Tool | Version | Purpose | Rationale |
-|---|---|---|---|
-| **Python** | `>=3.10` | Core programming runtime | High-performance ecosystem for scientific computing and econometrics |
-| **statsmodels** | `^0.14.1` | Econometric modeling | Industry-standard suite for ADF unit-root tests, ACF/PACF, and ARIMA estimation |
-| **yfinance** | `^0.2.36` | Market data ingestion | Direct, programmatic retrieval of 12+ years of Nifty 50 (`^NSEI`) adjusted prices |
-| **pandas** | `^2.1.0` | Time series manipulation | Datetime indexing, log return differences, and CPI tabular parsing |
-| **numpy** | `^1.26.0` | Numerical computing | Array manipulations, logarithmic transforms, and statistical aggregations |
-| **matplotlib** | `^3.8.0` | Diagnostic plotting | Multi-panel diagnostic figures exported to publication PNG files |
-| **seaborn** | `^0.13.0` | Statistical visualization | Density curves and distribution overlays for return series |
-| **scikit-learn** | `^1.3.0` | Evaluation metrics | Baseline mean squared error and scoring routines |
+| Library / Tool | Tested version | Purpose | Rationale |
+| --- | --- | --- | --- |
+| **Python** | `3.15.0rc2` (release candidate; every version in this table is recorded in `output/results.json` under env) | Core programming runtime | High-performance ecosystem for scientific computing and econometrics |
+| **statsmodels** | `0.15.0` | Econometric modeling | Industry-standard suite for ADF unit-root tests, ACF/PACF, and ARIMA estimation |
+| **yfinance** | `1.8.0` | Market data ingestion | Direct, programmatic retrieval of 12 years of Nifty 50 (`^NSEI`) daily closes |
+| **pandas** | `3.1.1` | Time series manipulation | Datetime indexing, daily return calculation, and CPI tabular parsing |
+| **numpy** | `2.5.5` | Numerical computing | Array manipulations, logarithmic transforms, and statistical aggregations |
+| **matplotlib** | `3.11.2` | Diagnostic plotting | Multi-panel diagnostic figures exported to publication PNG files |
+| **scikit-learn** | `1.9.1` | Evaluation metrics | Baseline mean squared error and scoring routines |
 
 ---
 
@@ -116,29 +115,29 @@ A common trap in quantitative finance is forcing machine learning algorithms ont
 - **Financial Market Data**:
   - **Asset**: Nifty 50 Index (`^NSEI`).
   - **Source**: Yahoo Finance API.
-  - **Horizon**: 2014 to 2026 (~3,000 daily trading sessions).
-  - **Attributes**: Open, High, Low, Close, Adj Close, Volume.
+  - **Horizon**: 2014-01-02 to 2026-02-27 (2,988 daily closes, 2,987 returns; fixed window).
+  - **Attributes**: Open, High, Low, Close, Volume (yfinance auto_adjust=True; only Close is used).
 - **Macroeconomic Inflation Data**:
   - **Asset**: Indian Consumer Price Index (CPI).
   - **Source**: `indianCPI_1960_feb26.csv`.
-  - **Horizon**: 1960 to February 2026 (60+ years of monthly observations).
+  - **Horizon**: 1960 to 2026, annual observations (World Bank indicator FP.CPI.TOTL.ZG); only 2014 to 2026 is used, with a caveat: the 2025 (2.8) and 2026 (3.2) values look like estimates, not published actuals (every other year has 9 decimals, and the file is dated Feb 2026, so a full-year 2026 figure cannot have been observed); their source was not verified.
 - **Preprocessing Applied**:
-  - Continuous log return calculation: $r_t = \ln(P_t / P_{t-1})$.
-  - First-differencing of non-stationary raw price levels.
+  - Simple daily return: $r_t = P_t / P_{t-1} - 1$ (pandas pct_change).
+  - Conversion of non-stationary raw price levels to simple daily returns.
   - DateTime alignment and missing value validation.
 
 ---
 
 ## 6. Step-by-Step Pipeline
 
-1. **Market Data Retrieval**: Query Yahoo Finance for `^NSEI` daily data from 2014 to present; verify data integrity and absence of missing trading days.
-2. **Stationarity & Unit Root Testing**: Run Augmented Dickey-Fuller tests on raw prices and continuous log returns to verify integration order $I(1)$.
-3. **Time Series Decomposition**: Apply additive decomposition separating price series into secular multi-year trend, seasonal patterns, and residual noise.
-4. **Autocorrelation Analysis**: Compute and plot ACF and PACF across 40 daily lags with 95% Bartlett confidence bounds ($\pm 1.96/\sqrt{N}$).
+1. **Market Data Retrieval**: Query Yahoo Finance for `^NSEI` daily data for the fixed window 2014-01-01 to 2026-03-01 (last close 2026-02-27); check for missing values.
+2. **Stationarity & Unit Root Testing**: Run Augmented Dickey-Fuller tests on raw prices and simple daily returns to verify integration order $I(1)$.
+3. **Time Series Decomposition**: Apply multiplicative decomposition (statsmodels seasonal_decompose, period = 52) to weekly-average closes, separating trend, seasonal and residual components.
+4. **Autocorrelation Analysis**: Compute and plot ACF and PACF across 30 daily lags with 95% white-noise bounds ($\pm 1.96/\sqrt{N}$). Bar counts are computed against this flat bound; the shaded ACF band in the plot is the statsmodels default Bartlett band, which widens with lag, so counts read off the plot can differ.
 5. **ARIMA Model Specification**: Fit parsimonious $ARIMA(1,0,1)$ model:
    $$r_t = c + \phi_1 r_{t-1} + \theta_1 \epsilon_{t-1} + \epsilon_t$$
 6. **Coefficient Testing & Forecast Evaluation**: Evaluate statistical significance of $\phi_1$ and $\theta_1$; generate out-of-sample forecast and demonstrate shrinkage to historical mean.
-7. **Macroeconomic CPI Analysis**: Parse `indianCPI_1960_feb26.csv` and visualize secular inflation curves across six decades to provide macroeconomic context.
+7. **Macroeconomic CPI Analysis**: Parse `indianCPI_1960_feb26.csv` and compare 2014 to 2026 annual inflation with yearly average Nifty returns (descriptive; only 2026 is a partial year: 2014 has 240 daily closes, 2026 has 40).
 8. **Artifact Generation**: Export all diagnostic plots to the `output/` directory.
 
 ---
@@ -146,12 +145,11 @@ A common trap in quantitative finance is forcing machine learning algorithms ont
 ## 7. Problems Faced & How We Solved Them
 
 | Problem | Impact | How We Got Around It |
-|---|---|---|
-| **Raw price series is non-stationary** (unit root present) | Cannot apply ARIMA or linear time-series econometric models directly on raw price levels — producing spurious regressions and invalid statistical inferences | Applied **first-differencing** via continuous log returns ($r_t = \ln(P_t/P_{t-1})$), which the Augmented Dickey-Fuller test confirmed is stationary at the 1% significance level ($p < 0.001$, ADF statistic $-56.82$) |
-| **ARIMA coefficients were statistically insignificant** | Both AR(1) and MA(1) parameters had $p > 0.05$, meaning the model could not detect linear predictive structure in daily returns | Accepted the **null result as the core empirical finding** — this validates the Efficient Market Hypothesis (EMH). Daily returns behave as near-random walks, motivating the architectural pivot toward second-moment volatility modeling |
-| **Overfitting temptation** with higher-order ARIMA(p,d,q) | Fitting ARIMA(5,1,5) or higher orders would capture transient noise and create false illusion of in-sample explanatory power | Deliberately restricted to **parsimonious ARIMA(1,0,1)** — the minimal non-trivial specification. ACF and PACF diagnostics confirmed zero statistically significant serial correlation beyond lag 0, proving higher-order terms overfit microstructure noise |
+| --- | --- | --- |
+| **Raw price series is non-stationary** (unit root present) | Cannot apply ARIMA or linear time-series econometric models directly on raw price levels — producing spurious regressions and invalid statistical inferences | Converted prices to **simple daily returns** ($r_t = P_t/P_{t-1} - 1$), which the Augmented Dickey-Fuller test confirmed is stationary at the 1% significance level ($p < 0.001$, ADF statistic $-15.36$, 11 lags) |
+| **ARIMA coefficients were statistically insignificant** | Both AR(1) and MA(1) parameters had $p > 0.05$, meaning the model could not detect linear predictive structure in daily returns | Accepted the **null result as the core empirical finding** — this is consistent with the weak-form Efficient Market Hypothesis (EMH). Daily returns behave as near-random walks, motivating the architectural pivot toward second-moment volatility modeling |
+| **Overfitting temptation** with higher-order ARIMA(p,d,q) | Fitting ARIMA(5,1,5) or higher orders would capture transient noise and create false illusion of in-sample explanatory power | Deliberately restricted to **parsimonious ARIMA(1,0,1)** — the minimal non-trivial specification. ACF/PACF show small but detectable serial correlation (8 of 30 ACF and 7 of 30 PACF bars outside the 95% bounds; lag-1 ACF -0.014), far too small to give a usable forecast, so higher orders were not pursued |
 | **ARIMA forecast collapsed to the sample mean** | Out-of-sample directional predictions flatlined at near-zero drift while realized market prices fluctuated wildly | Documented this expected econometric reality as visual proof (saved as `arima_forecast.png`), confirming that return-level forecasting is futile and directing quantitative attention to variance-process modeling (GARCH, HMM) |
-| **CPI data had inconsistent formatting** (1960–2026) | 60+ years of Indian CPI data had varying date formats, frequency adjustments, and column naming conventions | Cleaned and standardized the local dataset into `indianCPI_1960_feb26.csv`, maintaining descriptive macroeconomic analysis rather than forcing fragile cointegration models on mixed frequencies |
 
 ---
 
@@ -160,21 +158,24 @@ A common trap in quantitative finance is forcing machine learning algorithms ont
 ### Stationarity & Unit Root Test Results (ADF)
 
 | Series | ADF Statistic | p-value | 1% Critical Value | Econometric Conclusion |
-|---|:---:|:---:|:---:|---|
-| **Raw Nifty 50 Closing Price** | $-0.245$ | **0.942** | $-3.435$ | **Non-Stationary (Unit Root Present, $I(1)$)** |
-| **Log Returns ($r_t$)** | **$-56.821$** | **0.000** | $-3.435$ | **Stationary ($I(0)$)** |
+| --- | :---: | :---: | :---: | --- |
+| **Raw Nifty 50 Closing Price** | $+0.059$ | **0.963** | $-3.433$ | **Non-Stationary (Unit Root Present, $I(1)$)** |
+| **Daily Returns ($r_t$)** | **$-15.362$** | **0.000** | $-3.433$ | **Stationary ($I(0)$)** |
+
+ADF run (window 2014-01-02 to 2026-02-27; 2,988 prices, 2,987 returns; statsmodels default autolag=AIC): prices 0 lags, statistic +0.059; returns 11 lags, statistic -15.36 (-55.40 if forced to 0 lags). The statistic depends on lag choice; the rejection (p near 0) does not; the 1% critical value is -3.4325 for both series (saved as adf_crit_1pct). Source: output/results.json.
 
 ### ARIMA(1,0,1) Estimation Summary
 
-- **$\phi_1$ (Autoregressive Lag 1)**: Statistically insignificant ($p > 0.05$).
-- **$\theta_1$ (Moving Average Lag 1)**: Statistically insignificant ($p > 0.05$).
-- **Model In-Sample $R^2$**: $< 0.005$ (explains less than 0.5% of variance).
-- **Out-of-Sample Forecast**: Degenerates to historical sample mean with wide unbounded forecast confidence bands.
+- **$\phi_1$ (Autoregressive Lag 1)**: Statistically insignificant ($p = 0.710$).
+- **$\theta_1$ (Moving Average Lag 1)**: Statistically insignificant ($p = 0.704$).
+- **Model R-squared**: in-sample -2.5e-5; out-of-sample vs train mean 3.8e-6 (both about 0; source: output/results.json).
+- **Out-of-Sample Forecast**: Degenerates to the train-sample mean (out-of-sample R-squared vs train mean about 0).
+- **Out-of-Sample RMSE** (chronological 80/20 split): ARIMA 0.007992, train-mean forecast 0.007992, zero forecast 0.008004; ARIMA is 0.15% better than a zero forecast. Source: `output/results.json`.
 
 ### Econometric Interpretation
 
-1. **Weak-Form Efficient Market Hypothesis Confirmed**: Past price information contains no exploitable linear signal for forecasting future daily return drift on the Nifty 50 index.
-2. **Justification for Non-Linear / Regime-Based Modeling**: Because the first moment ($\mathbb{E}[r_t]$) is white noise, predictive modeling must shift to the second moment ($\text{Var}(r_t)$), where strong volatility clustering and regime persistence exist.
+1. **Consistent with Weak-Form EMH**: Past returns carry no usable linear signal (out-of-sample R-squared about 0), though lag-1 autocorrelation is statistically detectable (-0.014; Ljung-Box lag 10 p = 1.5e-8).
+2. **Justification for Non-Linear / Regime-Based Modeling**: Because the first moment ($\mathbb{E}[r_t]$) is close to unpredictable (out-of-sample R-squared about 0), predictive modeling must shift to the second moment ($\text{Var}(r_t)$), where volatility clustering is detectable (Ljung-Box on squared returns, lag 10: p about 0, below float precision).
 
 ---
 
@@ -191,7 +192,7 @@ Nifty-Time-Series/
     ├── decomposition.png       # Seasonal and trend decomposition
     ├── acf_pacf.png            # Autocorrelation and Partial Autocorrelation plots
     ├── arima_forecast.png      # Out-of-sample ARIMA forecast vs actual realization
-    └── inflation_analysis.png  # CPI historical series and inflation trends
+    └── inflation_analysis.png  # Yearly average Nifty return vs CPI inflation, 2014 to 2026
 ```
 
 ---
@@ -200,7 +201,7 @@ Nifty-Time-Series/
 
 ### Prerequisites
 
-- Python 3.10 or higher
+- Python: the recorded run used 3.15.0rc2 (a release candidate); exact package versions are in requirements.txt
 - Jupyter Notebook or JupyterLab
 
 ### 1. Environment Setup
@@ -231,22 +232,23 @@ jupyter lab
 ```
 
 Select **Run All Cells**. The notebook will:
-1. Fetch latest daily OHLCV market data for Nifty 50 (`^NSEI`) via Yahoo Finance.
+
+1. Fetch Nifty 50 (`^NSEI`) daily data for the fixed window 2014-01-01 to 2026-03-01 via Yahoo Finance.
 2. Load local CPI inflation records from `indianCPI_1960_feb26.csv`.
 3. Compute ADF statistics, decomposition, ACF/PACF graphs, and ARIMA models.
-4. Export updated diagnostic figures to the `output/` directory.
+4. Export diagnostic figures and `output/results.json` (source of the numbers quoted here) to `output/`. Use Restart and Run All so cells execute in order (rerun = reopen main.ipynb and Restart and Run All; results.json is rewritten and its env block records the Python and package versions used). The data window is fixed at 2014-01-01 to 2026-03-01.
 
 ---
 
 ## 11. Generated Diagnostic Artifacts
 
 | Artifact | Description |
-|---|---|
-| `output/nifty_overview.png` | Dual-panel visualization showing 12-year Nifty 50 closing price curve and daily log return oscillations. |
-| `output/decomposition.png` | Additive decomposition separating price history into secular trend, seasonal fluctuations, and residual variance. |
-| `output/acf_pacf.png` | Bartlett correlation bounds showing returns are indistinguishable from white noise up to lag 40. |
+| --- | --- |
+| `output/nifty_overview.png` | Dual-panel visualization showing 12-year Nifty 50 closing price curve and daily simple return oscillations. |
+| `output/decomposition.png` | Multiplicative decomposition of weekly-average closes (period 52) into trend, seasonal and residual components; seasonality is weak and likely an artefact. |
+| `output/acf_pacf.png` | Bounds over 30 lags: 8 of 30 ACF and 7 of 30 PACF bars fall outside; lag-1 ACF is -0.014 (economically negligible). |
 | `output/arima_forecast.png` | Visual proof of forecast shrinkage: ARIMA projections flatline at zero drift while realized prices fluctuate. |
-| `output/inflation_analysis.png` | 60+ year timeline of Indian inflation, demonstrating the real versus nominal purchasing power expansion of equity markets. |
+| `output/inflation_analysis.png` | Yearly average Nifty return vs Indian CPI inflation, 2014 to 2026 (13 points; r = +0.381, falling to -0.040 on 2015 to 2025; descriptive). |
 
 ---
 
@@ -274,7 +276,7 @@ Nifty Sector Rotation Strategy (Exploits cross-sectional relative momentum)
 
 - **[Volatility Intelligence Platform](https://github.com/RaajitSingh1306/volatility-intelligence-platform)**: Flagship ML platform directly motivated by this null result; models second-moment volatility clustering using GARCH and HMM.
 - **[Nifty Sector Rotation](https://github.com/RaajitSingh1306/Nifty-Sector-Rotation)**: Shifts from single-index time-series prediction to cross-sectional relative momentum across 10 sectors.
-- **[Finance KPI](https://github.com/RaajitSingh1306/Finance_Kpi)**: Single-ticker KPI engine sharing the same continuous log return formulation.
+- **[Finance KPI](https://github.com/RaajitSingh1306/Finance_Kpi)**: Single-ticker KPI engine using the same simple-return formulation.
 
 ---
 
@@ -299,7 +301,9 @@ Nifty Sector Rotation Strategy (Exploits cross-sectional relative momentum)
 ## 16. License & Disclaimer
 
 ### License
+
 This project is licensed under the [MIT License](https://opensource.org/licenses/MIT).
 
 ### Disclaimer
+
 This research is conducted solely for quantitative econometrics education and portfolio analysis. It does not constitute investment advice or trading recommendations.
